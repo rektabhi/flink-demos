@@ -7,9 +7,12 @@ import com.sumo.fraud.source.TransactionSource;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import java.util.concurrent.TimeUnit;
+
 public class TransactionAggregator {
 
-    private static final Integer NUM_USERS = 1;
+    private static final Integer NUM_USERS = 3;
+    private static final long TTL = TimeUnit.SECONDS.toMillis(3L * NUM_USERS);
 
     public static void main(String[] args) throws Exception {
         // 1. Set up the Flink execution environment
@@ -22,7 +25,7 @@ public class TransactionAggregator {
             // 3. Process the stream
             DataStream<UserAverage> averageStream = transactionStream
                     .keyBy(Transaction::getUserId)
-                    .process(new RollingAverageFunction());
+                    .process(new RollingAverageFunction(TTL));
 
             // 4. Print the results to the console
             averageStream.print();

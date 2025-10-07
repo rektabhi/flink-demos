@@ -16,12 +16,10 @@ import org.apache.flink.util.Collector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class RollingAverageFunction extends KeyedProcessFunction<String, Transaction, UserAverage> {
 
-    private static final long TTL = TimeUnit.SECONDS.toMillis(3);
-
+    private Long ttl;
     /**
      * State to store the running sum of transactions for the current user.
      */
@@ -32,6 +30,10 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
      * We store the timestamp and the value to know when to expire them.
      */
     private transient ListState<Tuple2<Long, Double>> transactionState;
+
+    public RollingAverageFunction(long ttl) {
+        this.ttl = ttl;
+    }
 
     @Override
     public void open(OpenContext openContext) {
@@ -60,7 +62,7 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
 
         // 3. Register a timer to fire after this event.
         // This timer will trigger the cleanup logic in the onTimer() method.
-        long cleanupTimestamp = transaction.getTimestamp() + TTL;
+        long cleanupTimestamp = transaction.getTimestamp() + this.ttl;
         // TODO: Check if event time or processing time is more appropriate
         //            ctx.timerService().registerEventTimeTimer(cleanupTimestamp);
         ctx.timerService().registerProcessingTimeTimer(cleanupTimestamp);
@@ -76,7 +78,7 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
     @Override
     public void onTimer(long timestamp, OnTimerContext ctx, Collector<UserAverage> out) throws Exception {
         // The timer fired, meaning some transactions are now older than TTL.
-        long expirationTime = timestamp - TTL;
+        long expirationTime = timestamp - this.ttl;
         System.out.println("Timer being invoked");
 
         // Prepare a list to hold transactions that are NOT expired
