@@ -34,7 +34,7 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
     private transient ListState<Tuple2<Long, Double>> transactionState;
 
     @Override
-    public void open(OpenContext openContext) throws Exception {
+    public void open(OpenContext openContext) {
         // Initialize state descriptors
         ValueStateDescriptor<Double> sumDescriptor = new ValueStateDescriptor<>("sumState", Double.class);
         sumState = getRuntimeContext().getState(sumDescriptor);
@@ -61,12 +61,13 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
         // 3. Register a timer to fire after this event.
         // This timer will trigger the cleanup logic in the onTimer() method.
         long cleanupTimestamp = transaction.getTimestamp() + TTL;
-//            ctx.timerService().registerEventTimeTimer(cleanupTimestamp);
+        // TODO: Check if event time or processing time is more appropriate
+        //            ctx.timerService().registerEventTimeTimer(cleanupTimestamp);
         ctx.timerService().registerProcessingTimeTimer(cleanupTimestamp);
 
         // 4. Calculate and emit the new average
         long count = 0L;
-        for (Tuple2<Long, Double> t : transactionState.get()) {
+        for (Tuple2<Long, Double> ignored : transactionState.get()) {
             count++;
         }
         out.collect(new UserAverage(transaction.getUserId(), newSum / count));

@@ -13,11 +13,16 @@ public class TransactionSource extends RichParallelSourceFunction<Transaction> {
     private final Random random = new Random();
     private final String[] userIds;
     private long transactionCounter = 0;
-    private final int N = 1;
 
-    public TransactionSource() {
-        userIds = new String[N];
-        for (int i = 1; i <= N; i++) {
+    private static final Integer MIN_TXN_AMOUNT = 1;
+    private static final Integer MAX_TXN_AMOUNT = 5;
+    private static final Integer MIN_SLEEP_TIME = 1000;
+    private static final Integer MAX_SLEEP_TIME = 2000;
+
+
+    public TransactionSource(int n) {
+        userIds = new String[n];
+        for (int i = 1; i <= n; i++) {
             userIds[i - 1] = "user" + i;
         }
     }
@@ -31,8 +36,7 @@ public class TransactionSource extends RichParallelSourceFunction<Transaction> {
             String userId = userIds[random.nextInt(userIds.length)];
             ++transactionCounter;
             long transactionTime = Instant.now().toEpochMilli();
-            double transactionAmount = ThreadLocalRandom.current().nextDouble(1.0, 5.0);
-            transactionAmount = (int) transactionAmount;
+            int transactionAmount = ThreadLocalRandom.current().nextInt(MIN_TXN_AMOUNT, MAX_TXN_AMOUNT);
             Transaction event = new Transaction(userId, transactionAmount, transactionTime);
 
             // Emit the event
@@ -43,8 +47,8 @@ public class TransactionSource extends RichParallelSourceFunction<Transaction> {
                 System.out.println("Generated " + transactionCounter + " transactions so far...");
             }
 
-            // Sleep for a random interval between 200ms to 800ms for more consistent streaming
-            Thread.sleep(ThreadLocalRandom.current().nextLong(1000, 2000));
+            // Sleep for a random interval for more consistent streaming
+            Thread.sleep(ThreadLocalRandom.current().nextLong(MIN_SLEEP_TIME, MAX_SLEEP_TIME));
         }
     }
 

@@ -9,12 +9,14 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 public class TransactionAggregator {
 
+    private static final Integer NUM_USERS = 1;
+
     public static void main(String[] args) throws Exception {
         // 1. Set up the Flink execution environment
         try (StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(1)) {
 
             // 2. Create a sample data source
-            DataStream<Transaction> transactionStream = env.addSource(new TransactionSource()).name("transactions");
+            DataStream<Transaction> transactionStream = env.addSource(new TransactionSource(NUM_USERS)).name("transactions");
             transactionStream.print();
 
             // 3. Process the stream
