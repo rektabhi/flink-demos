@@ -69,7 +69,7 @@ public class RollingAverageFunction extends KeyedProcessFunction<String, Transac
         for (Tuple2<Long, Double> t : transactionState.get()) {
             count++;
         }
-        out.collect(new UserAverage(transaction.getUserId(), newSum / count, System.currentTimeMillis()));
+        out.collect(new UserAverage(transaction.getUserId(), newSum / count));
     }
 
     @Override

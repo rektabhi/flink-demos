@@ -1,23 +1,16 @@
 package com.sumo.fraud.model;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class UserAverage {
-
-
     private String userId;
     private double averageValue;
-
-    public UserAverage() {
-    }
-
-    public UserAverage(String userId, double averageValue, long computationTime) {
-        this.userId = userId;
-        this.averageValue = averageValue;
-    }
-
-    @Override
-    public String toString() {
-        return ">> UserAverage{" + "userId='" + userId + '\'' + ", averageValue=" + averageValue + '}';
-    }
-
 
 }
