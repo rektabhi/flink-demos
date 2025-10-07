@@ -10,6 +10,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>flink-transaction-processor</module>
+    <module>beam-transaction-processor</module>
   </modules>
 
 
