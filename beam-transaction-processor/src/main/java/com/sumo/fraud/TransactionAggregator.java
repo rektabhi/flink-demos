@@ -4,6 +4,8 @@ import com.sumo.fraud.core.RollingAverageFunction;
 import com.sumo.fraud.model.Transaction;
 import com.sumo.fraud.model.UserAverage;
 import com.sumo.fraud.source.TransactionSource;
+import org.apache.beam.runners.direct.DirectOptions;
+import org.apache.beam.runners.direct.DirectRunner;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -20,12 +22,16 @@ public class TransactionAggregator {
 
     public static void main(String[] args) throws Exception {
         // 1. Set up the Beam pipeline options
-        PipelineOptions options = PipelineOptionsFactory.create();
+//        PipelineOptions options = PipelineOptionsFactory.create();
+        DirectOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().as(DirectOptions.class);
+        options.setTargetParallelism(1);
+        options.setRunner(DirectRunner.class); // Explicitly set the runner
+
         Pipeline pipeline = Pipeline.create(options);
 
-        // 2. Create a sample data source
+        // 2. Create an unlimited transaction source
         PCollection<Transaction> transactionStream = pipeline
-                .apply("Generate Transactions", new TransactionSource(NUM_USERS));
+                .apply("Generate Unlimited Transactions", new TransactionSource(NUM_USERS));
 
         // 3. Print transactions
         transactionStream.apply("Print Transactions", ParDo.of(new DoFn<Transaction, Void>() {
